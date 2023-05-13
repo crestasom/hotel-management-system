@@ -9,5 +9,5 @@ public class Rating {
 	private String userId;
 	private String hotelId;
 	private int rating;
-	private String remark;
+	private String feedback;
 }
