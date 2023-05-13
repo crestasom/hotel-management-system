@@ -24,6 +24,8 @@
 		<module>hotel-service</module>
 		<module>rating-service</module>
 		<module>user-service</module>
+		<module>api-gateway-hotel</module>
+		<module>config-server</module>
 	</modules>
 
 

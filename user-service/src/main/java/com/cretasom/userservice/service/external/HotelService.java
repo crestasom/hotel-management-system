@@ -11,4 +11,7 @@ public interface HotelService {
 	@GetMapping("/hotel/{hotelId}")
 	Hotel getHotel(@PathVariable String hotelId);
 
+	@GetMapping("/hotels/{hotelId}")
+	Hotel CreateHotel(@PathVariable String hotelId);
+
 }

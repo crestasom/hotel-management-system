@@ -18,7 +18,7 @@ import lombok.AllArgsConstructor;
 
 @RestController
 @AllArgsConstructor
-@RequestMapping("/users")
+@RequestMapping({"/users","/staff"})
 public class UserController {
 
 	private UserService userService;
