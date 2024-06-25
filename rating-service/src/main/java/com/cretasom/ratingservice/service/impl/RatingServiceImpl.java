@@ -18,7 +18,7 @@ import lombok.AllArgsConstructor;
 @Service
 @AllArgsConstructor
 public class RatingServiceImpl implements RatingService {
-
+	
 	private RatingRepository repo;
 	
 
@@ -34,6 +34,7 @@ public class RatingServiceImpl implements RatingService {
 
 	public Rating getRating(String ratingId) {
 		// TODO Auto-generated method stub
+		
 		return repo.findById(ratingId)
 				.orElseThrow(() -> new ResourceNotFoundException("Rating not found for id: " + ratingId));
 	}

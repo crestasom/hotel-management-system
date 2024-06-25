@@ -2,6 +2,8 @@ package com.cretasom.hotelservice.controller;
 
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -20,22 +22,22 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor
 @RequestMapping("/hotel")
 public class HotelController {
-
+	private static final Logger logger = LoggerFactory.getLogger(HotelController.class);
 	private HotelService hotelService;
 
 	@PostMapping
-	public ResponseEntity<Hotel> createUser(@RequestBody Hotel hotel) {
+	public ResponseEntity<Hotel> create(@RequestBody Hotel hotel) {
 		return ResponseEntity.status(HttpStatus.CREATED).body(hotelService.saveHotel(hotel));
 
 	}
 
-	@GetMapping("/{userId}")
-	public ResponseEntity<Hotel> getUser(@PathVariable String userId) {
-		return ResponseEntity.status(HttpStatus.OK).body(hotelService.getHotel(userId));
+	@GetMapping("/{hotelId}")
+	public ResponseEntity<Hotel> get(@PathVariable String hotelId) {
+		return ResponseEntity.status(HttpStatus.OK).body(hotelService.getHotel(hotelId));
 	}
 
 	@GetMapping
-	public ResponseEntity<List<Hotel>> getAllUser() {
+	public ResponseEntity<List<Hotel>> getAll() {
 		return ResponseEntity.status(HttpStatus.OK).body(hotelService.getAllHotel());
 	}
 }

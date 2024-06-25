@@ -2,6 +2,8 @@ package com.cretasom.ratingservice.controller;
 
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,6 +17,7 @@ import com.cretasom.ratingservice.entity.Rating;
 
 import com.cretasom.ratingservice.service.RatingService;
 
+
 import lombok.AllArgsConstructor;
 
 @RestController
@@ -23,7 +26,7 @@ import lombok.AllArgsConstructor;
 public class RatingController {
 
 	private RatingService ratingService;
-
+	private static final Logger logger = LoggerFactory.getLogger(RatingController.class);
 	@PostMapping
 	public ResponseEntity<Rating> createRating(@RequestBody Rating rating) {
 		return ResponseEntity.status(HttpStatus.CREATED).body(ratingService.saveRating(rating));
