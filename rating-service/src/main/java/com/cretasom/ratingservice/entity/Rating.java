@@ -1,13 +1,12 @@
 package com.cretasom.ratingservice.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import org.springframework.data.mongodb.core.mapping.Document;
 import lombok.Data;
+import jakarta.persistence.Id;
 
 @Data
-@Entity
-@Table(name = "rating")
+
+@Document("rating")
 public class Rating {
 	@Id
 	private String ratingId;

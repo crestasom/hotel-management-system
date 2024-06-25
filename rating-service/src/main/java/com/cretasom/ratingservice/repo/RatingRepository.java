@@ -1,12 +1,10 @@
 package com.cretasom.ratingservice.repo;
 
 import java.util.List;
-
-import org.springframework.data.jpa.repository.JpaRepository;
-
+import org.springframework.data.mongodb.repository.MongoRepository;
 import com.cretasom.ratingservice.entity.Rating;
 
-public interface RatingRepository extends JpaRepository<Rating, String> {
+public interface RatingRepository extends MongoRepository<Rating, String> {
 
 	List<Rating> findByUserId(String userId);
 
