@@ -57,8 +57,10 @@ public class UserServiceImpl implements UserService {
 				.orElseThrow(() -> new ResourceNotFoundException("Given ID is not found in server: " + userId));
 
 		// Using rest template to fetch objects from rating service
-		String ratingUri = "http://localhost:8088/rating/user/" + user.getUserId();
-		String hotelUri = "http://localhost:8098/hotel/";
+		String ratingUri = "http://rating-service/rating/user/" + user.getUserId();
+		String hotelUri = "http://hotel-service/hotel/";
+//		String ratingUri = "http://localhost:8088/rating/user/" + user.getUserId();
+//		String hotelUri = "http://localhost:8098/hotel/";
 		List<Rating> ratingList = restTemplate
 				.exchange(ratingUri, HttpMethod.GET, null, new ParameterizedTypeReference<List<Rating>>() {
 				}).getBody();
