@@ -1,8 +1,9 @@
 package com.cretasom.ratingservice.entity;
 
 import org.springframework.data.mongodb.core.mapping.Document;
-import lombok.Data;
+
 import jakarta.persistence.Id;
+import lombok.Data;
 
 @Data
 

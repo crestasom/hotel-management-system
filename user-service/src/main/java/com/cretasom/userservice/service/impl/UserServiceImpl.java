@@ -2,11 +2,15 @@ package com.cretasom.userservice.service.impl;
 
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
+
 import com.cretasom.hms.exception.ResourceNotFoundException;
 import com.cretasom.userservice.entity.Hotel;
 import com.cretasom.userservice.entity.Rating;
@@ -25,27 +29,56 @@ public class UserServiceImpl implements UserService {
 	private static final Logger logger = LoggerFactory.getLogger(UserServiceImpl.class);
 	private final HotelService hotelService;
 	private final RatingService ratingService;
+	@Autowired
+	private RestTemplate restTemplate;
 
+	private static final Logger log = LoggerFactory.getLogger(UserServiceImpl.class);
+
+	@Override
 	public User saveUser(User user) {
 		user.setUserId(UUID.randomUUID().toString());
 		return userRepository.save(user);
 	}
 
+	/**
+	 * getAllUser this method returns all users for database
+	 * 
+	 * @return List<User> list of users we get from db
+	 */
+	@Override
 	public List<User> getAllUser() {
 		return userRepository.findAll();
+
 	}
 
+	@Override
 	public User getUser(String userId) {
 		User user = userRepository.findById(userId)
 				.orElseThrow(() -> new ResourceNotFoundException("Given ID is not found in server: " + userId));
 
-		List<Rating> ratingList = ratingService.getAllRatingByUserId(userId);
-		user.setRatingList(ratingList.stream().map(rating -> {
-			Hotel hotel = hotelService.getHotel(rating.getHotelId());
-			logger.info("hotel [{}]", hotel);
-			rating.setHotel(hotel);
-			return rating;
-		}).collect(Collectors.toList()));
+		// Using rest template to fetch objects from rating service
+		String ratingUri = "http://localhost:8088/rating/user/" + user.getUserId();
+		String hotelUri = "http://localhost:8098/hotel/";
+		List<Rating> ratingList = restTemplate
+				.exchange(ratingUri, HttpMethod.GET, null, new ParameterizedTypeReference<List<Rating>>() {
+				}).getBody();
+
+		log.info("ratingList [{}]", ratingList);
+		for (Rating r : ratingList) {
+			log.info("hotelId [{}]" + r.getHotelId());
+			Hotel h = restTemplate.getForObject(hotelUri + r.getHotelId(), Hotel.class);
+			r.setHotel(h);
+		}
+
+		user.setRatingList(ratingList);
+		// Using feign client
+//		List<Rating> ratingList = ratingService.getAllRatingByUserId(userId);
+//		user.setRatingList(ratingList.stream().map(rating -> {
+//			Hotel hotel = hotelService.getHotel(rating.getHotelId());
+//			logger.info("hotel [{}]", hotel);
+//			rating.setHotel(hotel);
+//			return rating;
+//		}).collect(Collectors.toList()));
 
 		return user;
 	}
