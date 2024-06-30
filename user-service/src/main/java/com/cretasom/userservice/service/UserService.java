@@ -11,4 +11,8 @@ public interface UserService {
 	List<User> getAllUser();
 
 	User getUser(String userId);
+
+	User getUserOnly(String userId);
+
+	User getUserWithRatingsOnly(String userId);
 }

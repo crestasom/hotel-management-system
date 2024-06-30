@@ -15,10 +15,10 @@ import com.cretasom.hms.exception.ResourceNotFoundException;
 import com.cretasom.userservice.entity.Hotel;
 import com.cretasom.userservice.entity.Rating;
 import com.cretasom.userservice.entity.User;
+import com.cretasom.userservice.exception.HotelResourceNotFoundException;
+import com.cretasom.userservice.exception.RatingsNotFoundException;
 import com.cretasom.userservice.repo.UserRepository;
 import com.cretasom.userservice.service.UserService;
-import com.cretasom.userservice.service.external.HotelService;
-import com.cretasom.userservice.service.external.RatingService;
 
 import lombok.AllArgsConstructor;
 
@@ -26,9 +26,9 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor
 public class UserServiceImpl implements UserService {
 	private final UserRepository userRepository;
-	private static final Logger logger = LoggerFactory.getLogger(UserServiceImpl.class);
-	private final HotelService hotelService;
-	private final RatingService ratingService;
+//	private static final Logger logger = LoggerFactory.getLogger(UserServiceImpl.class);
+//	private final HotelService hotelService;
+////	private final RatingService ratingService;
 	@Autowired
 	private RestTemplate restTemplate;
 
@@ -52,6 +52,7 @@ public class UserServiceImpl implements UserService {
 	}
 
 	@Override
+
 	public User getUser(String userId) {
 		User user = userRepository.findById(userId)
 				.orElseThrow(() -> new ResourceNotFoundException("Given ID is not found in server: " + userId));
@@ -61,15 +62,27 @@ public class UserServiceImpl implements UserService {
 		String hotelUri = "http://hotel-service/hotel/";
 //		String ratingUri = "http://localhost:8088/rating/user/" + user.getUserId();
 //		String hotelUri = "http://localhost:8098/hotel/";
-		List<Rating> ratingList = restTemplate
-				.exchange(ratingUri, HttpMethod.GET, null, new ParameterizedTypeReference<List<Rating>>() {
-				}).getBody();
+		List<Rating> ratingList = null;
+		try {
+			log.info("Calling rating service to get rating");
+			ratingList = restTemplate
+					.exchange(ratingUri, HttpMethod.GET, null, new ParameterizedTypeReference<List<Rating>>() {
+					}).getBody();
+		} catch (Exception ex) {
+			throw new RatingsNotFoundException(ex.getMessage());
+		}
 
 		log.info("ratingList [{}]", ratingList);
-		for (Rating r : ratingList) {
-			log.info("hotelId [{}]" + r.getHotelId());
-			Hotel h = restTemplate.getForObject(hotelUri + r.getHotelId(), Hotel.class);
-			r.setHotel(h);
+		try {
+			if (ratingList != null) {
+				for (Rating r : ratingList) {
+					log.info("hotelId [{}]" + r.getHotelId());
+					Hotel h = restTemplate.getForObject(hotelUri + r.getHotelId(), Hotel.class);
+					r.setHotel(h);
+				}
+			}
+		} catch (Exception ex) {
+			throw new HotelResourceNotFoundException(ex.getMessage());
 		}
 
 		user.setRatingList(ratingList);
@@ -81,6 +94,40 @@ public class UserServiceImpl implements UserService {
 //			rating.setHotel(hotel);
 //			return rating;
 //		}).collect(Collectors.toList()));
+
+		return user;
+	}
+
+	@Override
+	public User getUserOnly(String userId) {
+		User user = userRepository.findById(userId)
+				.orElseThrow(() -> new ResourceNotFoundException("Given ID is not found in server: " + userId));
+		return user;
+	}
+
+	@Override
+	public User getUserWithRatingsOnly(String userId) {
+		// TODO Auto-generated method stub
+		log.info("getUserWithRatingsOnly");
+		User user = userRepository.findById(userId)
+				.orElseThrow(() -> new ResourceNotFoundException("Given ID is not found in server: " + userId));
+
+		// Using rest template to fetch objects from rating service
+		String ratingUri = "http://rating-service/rating/user/" + user.getUserId();
+		String hotelUri = "http://hotel-service/hotel/";
+//		String ratingUri = "http://localhost:8088/rating/user/" + user.getUserId();
+//		String hotelUri = "http://localhost:8098/hotel/";
+		List<Rating> ratingList = null;
+		try {
+			log.info("Calling rating service to get rating");
+			ratingList = restTemplate
+					.exchange(ratingUri, HttpMethod.GET, null, new ParameterizedTypeReference<List<Rating>>() {
+					}).getBody();
+		} catch (Exception ex) {
+			throw new RatingsNotFoundException(ex.getMessage());
+		}
+
+		user.setRatingList(ratingList);
 
 		return user;
 	}
