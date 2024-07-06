@@ -7,9 +7,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 import com.cretasom.hms.exception.ResourceNotFoundException;
 import com.cretasom.userservice.entity.Hotel;
@@ -20,6 +24,7 @@ import com.cretasom.userservice.exception.RatingsNotFoundException;
 import com.cretasom.userservice.repo.UserRepository;
 import com.cretasom.userservice.service.UserService;
 
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
 
 @Service
@@ -52,7 +57,6 @@ public class UserServiceImpl implements UserService {
 	}
 
 	@Override
-
 	public User getUser(String userId) {
 		User user = userRepository.findById(userId)
 				.orElseThrow(() -> new ResourceNotFoundException("Given ID is not found in server: " + userId));
@@ -65,8 +69,9 @@ public class UserServiceImpl implements UserService {
 		List<Rating> ratingList = null;
 		try {
 			log.info("Calling rating service to get rating");
-			ratingList = restTemplate
-					.exchange(ratingUri, HttpMethod.GET, null, new ParameterizedTypeReference<List<Rating>>() {
+
+			ratingList = restTemplate.exchange(ratingUri, HttpMethod.GET, getAuthHeader(),
+					new ParameterizedTypeReference<List<Rating>>() {
 					}).getBody();
 		} catch (Exception ex) {
 			throw new RatingsNotFoundException(ex.getMessage());
@@ -77,7 +82,9 @@ public class UserServiceImpl implements UserService {
 			if (ratingList != null) {
 				for (Rating r : ratingList) {
 					log.info("hotelId [{}]" + r.getHotelId());
-					Hotel h = restTemplate.getForObject(hotelUri + r.getHotelId(), Hotel.class);
+
+					log.info("Calling rating service to get rating");
+					Hotel h = restTemplate.getForObject(hotelUri + r.getHotelId(), Hotel.class, getAuthHeader());
 					r.setHotel(h);
 				}
 			}
@@ -114,14 +121,14 @@ public class UserServiceImpl implements UserService {
 
 		// Using rest template to fetch objects from rating service
 		String ratingUri = "http://rating-service/rating/user/" + user.getUserId();
-		String hotelUri = "http://hotel-service/hotel/";
 //		String ratingUri = "http://localhost:8088/rating/user/" + user.getUserId();
 //		String hotelUri = "http://localhost:8098/hotel/";
 		List<Rating> ratingList = null;
 		try {
 			log.info("Calling rating service to get rating");
-			ratingList = restTemplate
-					.exchange(ratingUri, HttpMethod.GET, null, new ParameterizedTypeReference<List<Rating>>() {
+
+			ratingList = restTemplate.exchange(ratingUri, HttpMethod.GET, getAuthHeader(),
+					new ParameterizedTypeReference<List<Rating>>() {
 					}).getBody();
 		} catch (Exception ex) {
 			throw new RatingsNotFoundException(ex.getMessage());
@@ -130,6 +137,22 @@ public class UserServiceImpl implements UserService {
 		user.setRatingList(ratingList);
 
 		return user;
+	}
+
+	public HttpEntity<String> getAuthHeader() {
+
+		ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+		HttpServletRequest request = attributes != null ? attributes.getRequest() : null;
+		if (request == null) {
+			return null;
+		}
+
+		HttpHeaders headers = new HttpHeaders();
+		headers.set("Authorization", request.getHeader("Authorization"));
+
+		// Create HttpEntity with the headers
+		return new HttpEntity<>(headers);
+
 	}
 
 }

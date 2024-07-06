@@ -1,5 +1,7 @@
 package com.cretasom.hotel_security.service;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -16,6 +18,7 @@ public class AuthService {
 	private JwtService jwtService;
 	@Autowired
 	private AuthenticationManager authenticationManager;
+	private static Logger logger = LoggerFactory.getLogger(AuthService.class);
 
 	public AuthResp validateAuthRequestt(AuthRequest authRequest) {
 		AuthResp resp = new AuthResp();
@@ -37,8 +40,11 @@ public class AuthService {
 		return jwtService.generateToken(username);
 	}
 
-	public void validateToken(String token) {
-		jwtService.validateToken(token);
+	public int validateToken(String token) {
+		logger.info("token [{}]", token);
+		int respCode = jwtService.validateToken(token);
+		logger.info("respCode [{}]", respCode);
+		return respCode;
 	}
 
 }

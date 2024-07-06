@@ -15,29 +15,25 @@ import org.springframework.security.web.SecurityFilterChain;
 @EnableWebSecurity
 public class AuthConfig {
 
-//    @Bean
-//    public UserDetailsService userDetailsService(){
-//        return new CustomUserDetailsService();
-//    }
-
 	@Bean
-	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-		return http.csrf().disable().authorizeHttpRequests()
-				.requestMatchers("/auth/register", "/auth/token", "/auth/validate").permitAll().and().build();
+	SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+		return http.csrf(csrf -> csrf.disable()).authorizeHttpRequests(
+				requests -> requests.requestMatchers("/auth/token", "/auth/validate/**").permitAll()).build();
 	}
 
+	@SuppressWarnings("deprecation")
 	@Bean
-	public static NoOpPasswordEncoder passwordEncoder() {
+	static NoOpPasswordEncoder passwordEncoder() {
 		return (NoOpPasswordEncoder) NoOpPasswordEncoder.getInstance();
 	}
 
 	@Autowired
 	public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
-		auth.inMemoryAuthentication().withUser("user1").password("user1pass").authorities("ROLE_USER");
+		auth.inMemoryAuthentication().withUser("user1").password("user1pass").roles("ADMIN");
 	}
 
 	@Bean
-	public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
+	AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
 		return config.getAuthenticationManager();
 	}
 }

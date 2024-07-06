@@ -10,7 +10,6 @@
 	</parent>
 	<groupId>com.cretasom</groupId>
 	<artifactId>hotel-security</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
 	<name>hotel-security</name>
 	<description>security module</description>
 	<url />

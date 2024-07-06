@@ -7,8 +7,11 @@ import java.util.Map;
 
 import org.springframework.stereotype.Component;
 
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.UnsupportedJwtException;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 
@@ -17,8 +20,17 @@ public class JwtService {
 
 	public static final String SECRET = "5367566B59703373367639792F423F4528482B4D6251655468576D5A71347437";
 
-	public void validateToken(final String token) {
-		Jwts.parserBuilder().setSigningKey(getSignKey()).build().parseClaimsJws(token);
+	public int validateToken(final String token) {
+		try {
+			Jwts.parserBuilder().setSigningKey(getSignKey()).build().parseClaimsJws(token);
+			return 200;
+		} catch (UnsupportedJwtException | MalformedJwtException e) {
+			// TODO: handle exception
+			return 403;
+		} catch (ExpiredJwtException e) {
+			// TODO: handle exception
+			return 409;
+		}
 	}
 
 	public String generateToken(String userName) {
