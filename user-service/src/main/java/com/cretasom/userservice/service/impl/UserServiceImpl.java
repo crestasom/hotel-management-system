@@ -10,6 +10,7 @@ import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.context.request.RequestContextHolder;
@@ -60,7 +61,6 @@ public class UserServiceImpl implements UserService {
 	public User getUser(String userId) {
 		User user = userRepository.findById(userId)
 				.orElseThrow(() -> new ResourceNotFoundException("Given ID is not found in server: " + userId));
-
 		// Using rest template to fetch objects from rating service
 		String ratingUri = "http://rating-service/rating/user/" + user.getUserId();
 		String hotelUri = "http://hotel-service/hotel/";
@@ -84,8 +84,10 @@ public class UserServiceImpl implements UserService {
 					log.info("hotelId [{}]" + r.getHotelId());
 
 					log.info("Calling rating service to get rating");
-					Hotel h = restTemplate.getForObject(hotelUri + r.getHotelId(), Hotel.class, getAuthHeader());
-					r.setHotel(h);
+					ResponseEntity<Hotel> h = restTemplate.exchange(hotelUri + r.getHotelId(), HttpMethod.GET,
+							getAuthHeader(), Hotel.class);
+
+					r.setHotel(h.getBody());
 				}
 			}
 		} catch (Exception ex) {
