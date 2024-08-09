@@ -14,8 +14,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.cretasom.userservice.entity.User;
-import com.cretasom.userservice.exception.HotelResourceNotFoundException;
-import com.cretasom.userservice.exception.RatingsNotFoundException;
 import com.cretasom.userservice.service.UserService;
 import com.cretasom.userservice.service.impl.UserServiceImpl;
 
@@ -44,12 +42,9 @@ public class UserController {
 
 	public ResponseEntity<User> ratingHotelFallback(@PathVariable String userId, Exception ex) {
 		log.error("Fall back method es executing because service is down:", ex);
-		if (ex instanceof RatingsNotFoundException) {
-			return ResponseEntity.status(HttpStatus.OK).body(userService.getUserOnly(userId));
-		} else if (ex instanceof HotelResourceNotFoundException) {
-			return ResponseEntity.status(HttpStatus.OK).body(userService.getUserWithRatingsOnly(userId));
-		}
-		return ResponseEntity.status(HttpStatus.OK).body(User.builder().name("test").email("test@gmail.com").build());
+
+		return ResponseEntity.status(HttpStatus.OK).body(userService.getUserFallback(userId, ex));
+
 	}
 
 	@GetMapping

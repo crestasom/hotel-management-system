@@ -21,6 +21,7 @@ import lombok.AllArgsConstructor;
 @RequestMapping("/hotel")
 public class HotelController {
 
+//	static final Counter counter =Counter.build().name("t")
 	private HotelService hotelService;
 
 	@PostMapping

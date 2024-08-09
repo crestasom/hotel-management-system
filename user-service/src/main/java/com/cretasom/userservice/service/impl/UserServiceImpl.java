@@ -32,7 +32,6 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor
 public class UserServiceImpl implements UserService {
 	private final UserRepository userRepository;
-//	private static final Logger logger = LoggerFactory.getLogger(UserServiceImpl.class);
 //	private final HotelService hotelService;
 ////	private final RatingService ratingService;
 	@Autowired
@@ -108,14 +107,23 @@ public class UserServiceImpl implements UserService {
 	}
 
 	@Override
-	public User getUserOnly(String userId) {
+	public User getUserFallback(String userId, Exception ex) {
+		// TODO Auto-generated method stub
+		if (ex instanceof RatingsNotFoundException) {
+			return getUserOnly(userId);
+		} else if (ex instanceof HotelResourceNotFoundException) {
+			return getUserWithRatingsOnly(userId);
+		}
+		return User.builder().name("test").email("test@gmail.com").build();
+	}
+
+	private User getUserOnly(String userId) {
 		User user = userRepository.findById(userId)
 				.orElseThrow(() -> new ResourceNotFoundException("Given ID is not found in server: " + userId));
 		return user;
 	}
 
-	@Override
-	public User getUserWithRatingsOnly(String userId) {
+	private User getUserWithRatingsOnly(String userId) {
 		// TODO Auto-generated method stub
 		log.info("getUserWithRatingsOnly");
 		User user = userRepository.findById(userId)
@@ -141,7 +149,7 @@ public class UserServiceImpl implements UserService {
 		return user;
 	}
 
-	public HttpEntity<String> getAuthHeader() {
+	public static HttpEntity<String> getAuthHeader() {
 
 		ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
 		HttpServletRequest request = attributes != null ? attributes.getRequest() : null;
@@ -156,5 +164,4 @@ public class UserServiceImpl implements UserService {
 		return new HttpEntity<>(headers);
 
 	}
-
 }

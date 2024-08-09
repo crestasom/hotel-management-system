@@ -27,7 +27,10 @@ public class JWTAuthenticationFilter extends OncePerRequestFilter {
 			throws IOException, ServletException {
 		String header = req.getHeader("Authorization");
 		logger.info("header [{}]", header);
-
+		if (req.getRequestURI().contains("actuator")) {
+			chain.doFilter(req, res);
+			return;
+		}
 		if (header == null || !header.startsWith("Bearer ")) {
 			res.setStatus(HttpStatus.BAD_REQUEST.value());
 			return;
